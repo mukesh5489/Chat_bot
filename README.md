@@ -11,10 +11,6 @@ A modern web-based chatbot powered by Google's Gemini API, built with Flask and 
 - Voice input (speech-to-text)
 - Responsive and modern UI
 
-## Screenshots
-
-![Chat UI](static/bot-icon.png) <!-- Replace with actual screenshot if available -->
-
 ## Getting Started
 
 ### 1. Clone the repository
