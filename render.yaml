@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: gemini-chatbot
+    env: python
+    buildCommand: ""
+    startCommand: python bot.py
+    envVars:
+      - key: GOOGLE_API_KEY
+        value: YOUR_API_KEY_HERE

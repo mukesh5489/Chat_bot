@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DYNAMIC_BOT</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --primary-text: #e0e0e0;
+      --header-bg: #1f1f1f;
+      --input-bg: #2c2c2c;
+      --border-color: #333;
+      --button-bg: linear-gradient(135deg, #00c6ff, #0078d7);
+      --button-hover-bg: linear-gradient(135deg, #0078d7, #00bcd4);
+    }
+
+    .light-theme {
+      --bg-color: #ffffff;
+      --primary-text: #000000;
+      --header-bg: #f0f0f0;
+      --input-bg: #e0e0e0;
+      --border-color: #ccc;
+      --button-bg: linear-gradient(135deg, #00c6ff, #0078d7);
+      --button-hover-bg: linear-gradient(135deg, #0078d7, #00bcd4);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--primary-text);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      background-color: var(--header-bg);
+      border-bottom: 1px solid var(--border-color);
+      letter-spacing: 2px;
+      color: var(--primary-text);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    #theme-toggle {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--primary-text);
+      transition: transform 0.3s ease;
+    }
+
+    #theme-toggle:hover {
+      transform: scale(1.2);
+    }
+
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: -500%;
+      width: 30%;
+      height: 100%;
+      background-color: var(--header-bg);
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+      transition: left 0.3s ease;
+      z-index: 1000;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #sidebar.open {
+      left: 0;
+    }
+
+    #sidebar-toggle {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--primary-text);
+      transition: transform 0.3s ease;
+    }
+
+    #sidebar-toggle:hover {
+      transform: rotate(90deg);
+    }
+
+    #new-chat-btn, #back-btn {
+      background: var(--button-bg);
+      border: none;
+      color: white;
+      font-size: 16px;
+      padding: 10px 15px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    #new-chat-btn:hover, #back-btn:hover {
+      background: var(--button-hover-bg);
+      transform: scale(1.05);
+    }
+
+    #back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--button-bg);
+      border: none;
+      color: white;
+      font-size: 16px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+      z-index: 1100; 
+    }
+
+    #back-btn:hover {
+      background: var(--button-hover-bg);
+      transform: scale(1.05);
+    }
+
+    #sidebar-content {
+      margin-top: 60px; 
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .chat-history {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-history li {
+      background: var(--input-bg);
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .chat-history li:hover {
+      background: var(--button-hover-bg);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .chat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--input-bg);
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .chat-item:hover {
+      background: var(--button-hover-bg);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--primary-text);
+      font-size: 16px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      color: red;
+    }
+
+    #chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #input-area {
+      display: flex;
+      padding: 15px;
+      background-color: var(--header-bg);
+      border-top: 1px solid var(--border-color);
+      gap: 10px;
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--input-bg);
+      color: var(--primary-text);
+      transition: border 0.3s;
+    }
+
+    #user-input:focus {
+      border: 2px solid var(--button-bg);
+    }
+
+    #send-btn {
+      position: relative;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 50px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    #send-btn::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, red, yellow, green, cyan, blue, magenta);
+      background-size: 400%;
+      border-radius: 50%;
+      z-index: 0;
+      animation: rgb-rotation 5s linear infinite;
+    }
+
+    #send-btn span {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes rgb-rotation {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 5px 0;
+      display: inline-block;
+      word-wrap: break-word;
+      font-family: 'Poppins', sans-serif; 
+      font-size: 14px; 
+    }
+
+    .message.user {
+      background-color: var(--input-bg); 
+      color: var(--primary-text); 
+      align-self: flex-end;
+      text-align: right;
+      border-top-right-radius: 0;
+    }
+
+    .message.bot {
+      background-color: var(--input-bg);
+      color: var(--primary-text);
+      align-self: flex-start;
+      text-align: left;
+      border-top-left-radius: 0;
+    }
+
+    .message-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .message-container.user {
+      justify-content: flex-end;
+    }
+
+    .message-container.bot {
+      justify-content: flex-start;
+    }
+
+    .message-container img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    #chat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #mic-btn {
+      background-color: #0078d7; 
+      border: none;
+      color: white;
+      font-size: 16px;
+      padding: 12px;
+      border-radius: 50%; 
+      cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    #mic-btn:hover {
+      background-color: #005bb5; 
+      transform: scale(1.1); 
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button id="sidebar-toggle">☰</button>
+    DYNAMO
+    <button id="theme-toggle">🌙</button>
+  </header>
+  <div id="sidebar">
+    <button id="back-btn">←</button>
+    <div id="sidebar-content">
+      <button id="new-chat-btn">New Chat</button>
+      <ul class="chat-history" id="chat-history">
+        <!-- Chat history here -->
+      </ul>
+    </div>
+  </div>
+  <div id="chat-box"></div>
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="Type your message..." />
+    <button id="mic-btn" class="back-btn">🎙️</button>
+    <button id="send-btn"><span>Send</span></button>
+  </div>
+<script>
+const sidebarToggle = document.getElementById("sidebar-toggle");
+const sidebar = document.getElementById("sidebar");
+const newChatBtn = document.getElementById("new-chat-btn");
+const backBtn = document.getElementById("back-btn");
+const chatHistory = document.getElementById("chat-history");
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+
+let chatCount = 0;
+let currentChat = null;
+const chats = {}; 
+sidebarToggle.addEventListener("click", () => {
+  sidebar.classList.toggle("open");
+});
+
+backBtn.addEventListener("click", () => {
+  sidebar.classList.remove("open");
+});
+
+newChatBtn.addEventListener("click", () => {
+  chatCount++;
+  const chatName = `Chat ${chatCount}`;
+  const chatItem = document.createElement("li");
+  chatItem.className = "chat-item";
+
+  // Chat name
+  const chatNameSpan = document.createElement("span");
+  chatNameSpan.textContent = chatName;
+  chatNameSpan.addEventListener("click", () => {
+    loadChat(chatName);
+    sidebar.classList.remove("open");
+  });
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "delete-btn";
+  deleteBtn.innerHTML = "🗑️"; 
+  deleteBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); 
+    deleteChat(chatName, chatItem);
+  });
+
+  chatItem.appendChild(chatNameSpan);
+  chatItem.appendChild(deleteBtn);
+  chatHistory.appendChild(chatItem);
+
+  chats[chatName] = []; 
+  currentChat = chatName;
+  chatBox.innerHTML = `<p>Started ${chatName}</p>`;
+});
+
+function deleteChat(chatName, chatItem) {
+  
+  delete chats[chatName];
+  chatHistory.removeChild(chatItem);
+
+  if (currentChat === chatName) {
+    currentChat = null;
+    chatBox.innerHTML = "<p>Select or start a new chat</p>";
+  }
+}
+
+function loadChat(chatName) {
+  currentChat = chatName;
+  chatBox.innerHTML = "";
+  const messages = chats[chatName] || [];
+  messages.forEach(({ sender, text }) => {
+    const container = document.createElement("div");
+    container.className = `message-container ${sender}`;
+
+    const icon = document.createElement("img");
+    icon.src = sender === "user" ? "user-icon.png" : "bot-icon.png";
+    icon.alt = `${sender} Icon`;
+
+    const message = document.createElement("div");
+    message.textContent = text;
+    message.className = `message ${sender}`;
+
+    if (sender === "user") {
+      container.appendChild(message);
+      container.appendChild(icon);
+    } else {
+      container.appendChild(icon);
+      container.appendChild(message);
+    }
+
+    chatBox.appendChild(container);
+  });
+}
+
+async function sendMessage() {
+  if (!currentChat) {
+    alert("Please start a new chat first!");
+    return;
+  }
+
+  const message = userInput.value.trim();
+  if (!message) return;
+  chats[currentChat].push({ sender: "user", text: message });
+
+  const userContainer = document.createElement("div");
+  userContainer.className = "message-container user";
+
+  const userIcon = document.createElement("img");
+  userIcon.src = "user-icon.png";
+  userIcon.alt = "User Icon";
+
+  const userMsg = document.createElement("div");
+  userMsg.textContent = message;
+  userMsg.className = "message user";
+
+  userContainer.appendChild(userMsg);
+  userContainer.appendChild(userIcon);
+  chatBox.appendChild(userContainer);
+  userInput.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
+  const botContainer = document.createElement("div");
+  botContainer.className = "message-container bot";
+  const botIcon = document.createElement("img");
+  botIcon.src = "bot-icon.png";
+  botIcon.alt = "Bot Icon";
+  const botMsg = document.createElement("div");
+  botMsg.textContent = "Bot is typing...";
+  botMsg.className = "message bot";
+  botContainer.appendChild(botIcon);
+  botContainer.appendChild(botMsg);
+  chatBox.appendChild(botContainer);
+
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const data = await response.json();
+    botMsg.textContent = data.reply;
+    chats[currentChat].push({ sender: "bot", text: data.reply });
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } catch (error) {
+    botMsg.textContent = "Error: Unable to connect to the server.";
+  }
+}
+
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+
+document.getElementById("theme-toggle").addEventListener("click", () => {
+  document.body.classList.toggle("light-theme");
+});
+
+const micBtn = document.getElementById("mic-btn");
+micBtn.addEventListener("click", () => {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+
+  recognition.start();
+
+  recognition.onstart = () => {
+    micBtn.textContent = "🎙️ Listening...";
+  };
+
+  recognition.onspeechend = () => {
+    recognition.stop();
+    micBtn.textContent = "🎙️";
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    userInput.value = transcript;
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    micBtn.textContent = "🎙️";
+  };
+});
+</script>
+</body>
+</html>
